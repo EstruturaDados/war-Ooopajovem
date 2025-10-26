@@ -31,7 +31,7 @@
 
 // --- Função Principal (main) ---
 // Função principal que orquestra o fluxo do jogo, chamando as outras funções em ordem.
-int main() {
+//int main() {
     // 1. Configuração Inicial (Setup):
     // - Define o locale para português.
     // - Inicializa a semente para geração de números aleatórios com base no tempo atual.
@@ -51,8 +51,8 @@ int main() {
     // 3. Limpeza:
     // - Ao final do jogo, libera a memória alocada para o mapa para evitar vazamentos de memória.
 
-    return 0;
-}
+//    return 0;
+//}
 
 // --- Implementação das Funções ---
 
@@ -96,3 +96,48 @@ int main() {
 
 // limparBufferEntrada():
 // Função utilitária para limpar o buffer de entrada do teclado (stdin), evitando problemas com leituras consecutivas de scanf e getchar.
+
+
+#include <stdio.h>
+#include <string.h>
+
+struct Territorio
+{
+    char nome[50];
+    char corExercito[50];
+    int quantidade;
+};
+
+int main() {
+    struct Territorio war[5];  
+    int totalCadastrados = 0; 
+    
+    printf("Cadastrando os 5 territorios inicias do nosso mundo\n");
+    for (int i = 0; i < 5; i++) { 
+        printf("---Cadastro do %d° Territorio---\n", i + 1);
+        printf("Nome do Territorio: ");
+        scanf("%s", war[i].nome);
+        printf("Cor do Exercito: ");
+        scanf("%s", war[i].corExercito);
+        printf("Quantidade de tropas: "); 
+        scanf("%d", &war[i].quantidade);
+        
+        totalCadastrados++; 
+    }
+    
+    printf("\nAdd encerrado\n");
+
+   
+    for (int x = 0; x < totalCadastrados; x++) { 
+        printf("======================================\n");
+        printf("Mapa do Mundo - Estado atual\n");
+        printf("======================================\n");
+        printf("Territorio %d°\n", x + 1);
+        printf("- Nome: %s\n", war[x].nome); 
+        printf("- Doninado por: Exercito %s\n", war[x].corExercito);
+        printf("- Tropa: %d\n", war[x].quantidade); 
+        printf("\n");
+    }
+    
+    return 0;
+}
