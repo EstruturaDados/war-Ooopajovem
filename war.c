@@ -100,44 +100,208 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+#include <time.h>
 
-struct Territorio
-{
-    char nome[50];
-    char corExercito[50];
-    int quantidade;
+struct Territorio {
+    char nome[30];
+    char cor[10];
+    int tropas;
 };
 
-int main() {
-    struct Territorio war[5];  
-    int totalCadastrados = 0; 
-    
-    printf("Cadastrando os 5 territorios inicias do nosso mundo\n");
-    for (int i = 0; i < 5; i++) { 
-        printf("---Cadastro do %d° Territorio---\n", i + 1);
-        printf("Nome do Territorio: ");
-        scanf("%s", war[i].nome);
-        printf("Cor do Exercito: ");
-        scanf("%s", war[i].corExercito);
-        printf("Quantidade de tropas: "); 
-        scanf("%d", &war[i].quantidade);
-        
-        totalCadastrados++; 
-    }
-    
-    printf("\nAdd encerrado\n");
+// Protótipos das funções
+void cadastrarTerritorios(struct Territorio** mapa, int* totalTerritorios);
+void exibirTerritorios(struct Territorio* mapa, int totalTerritorios);
+void atacar(struct Territorio* atacante, struct Territorio* defensor);
+void liberarMemoria(struct Territorio* mapa);
+void simularAtaque(struct Territorio* mapa, int totalTerritorios);
 
-   
-    for (int x = 0; x < totalCadastrados; x++) { 
-        printf("======================================\n");
-        printf("Mapa do Mundo - Estado atual\n");
-        printf("======================================\n");
-        printf("Territorio %d°\n", x + 1);
-        printf("- Nome: %s\n", war[x].nome); 
-        printf("- Doninado por: Exercito %s\n", war[x].corExercito);
-        printf("- Tropa: %d\n", war[x].quantidade); 
-        printf("\n");
+int main() {
+    struct Territorio* mapa = NULL;
+    int totalTerritorios = 0;
+    int opcao;
+    
+    // Inicializar gerador de números aleatórios
+    srand(time(NULL));
+    
+    do {
+        printf("\n=== SISTEMA WAR ESTRUTURADO ===\n");
+        printf("1. Cadastrar territorios\n");
+        printf("2. Exibir territorios\n");
+        printf("3. Simular ataque\n");
+        printf("0. Sair\n");
+        printf("Escolha uma opcao: ");
+        scanf("%d", &opcao);
+        
+        switch(opcao) {
+            case 1:
+                cadastrarTerritorios(&mapa, &totalTerritorios);
+                break;
+            case 2:
+                exibirTerritorios(mapa, totalTerritorios);
+                break;
+            case 3:
+                simularAtaque(mapa, totalTerritorios);
+                break;
+            case 0:
+                printf("Encerrando o sistema...\n");
+                break;
+            default:
+                printf("Opcao invalida!\n");
+                break;
+        }
+    } while(opcao != 0);
+    
+    liberarMemoria(mapa);
+    return 0;
+}
+
+// Função para cadastrar territórios com alocação dinâmica
+void cadastrarTerritorios(struct Territorio** mapa, int* totalTerritorios) {
+    printf("\nQuantos territorios deseja cadastrar? ");
+    scanf("%d", totalTerritorios);
+    
+    // Alocar memória para o vetor de territórios
+    *mapa = (struct Territorio*)calloc(*totalTerritorios, sizeof(struct Territorio));
+    
+    if (*mapa == NULL) {
+        printf("Erro ao alocar memoria!\n");
+        return;
     }
     
-    return 0;
+    printf("\n=== CADASTRO DE TERRITORIOS ===\n");
+    for(int i = 0; i < *totalTerritorios; i++) {
+        printf("\nTerritorio %d:\n", i + 1);
+        printf("Nome: ");
+        scanf("%s", (*mapa)[i].nome);
+        printf("Cor do exercito: ");
+        scanf("%s", (*mapa)[i].cor);
+        printf("Quantidade de tropas: ");
+        scanf("%d", &(*mapa)[i].tropas);
+    }
+    printf("\nCadastro concluido!\n");
+}
+
+// Função para exibir todos os territórios
+void exibirTerritorios(struct Territorio* mapa, int totalTerritorios) {
+    if(mapa == NULL || totalTerritorios == 0) {
+        printf("\nNenhum territorio cadastrado!\n");
+        return;
+    }
+    
+    printf("\n=== MAPA DO MUNDO - ESTADO ATUAL ===\n");
+    for(int i = 0; i < totalTerritorios; i++) {
+        printf("\nTerritorio %d:\n", i + 1);
+        printf("- Nome: %s\n", mapa[i].nome);
+        printf("- Dominado por: Exercito %s\n", mapa[i].cor);
+        printf("- Tropas: %d\n", mapa[i].tropas);
+        printf("----------------------------\n");
+    }
+}
+
+// Função principal de ataque entre territórios
+void atacar(struct Territorio* atacante, struct Territorio* defensor) {
+    printf("\n=== SIMULACAO DE ATAQUE ===\n");
+    printf("Atacante: %s (%s) com %d tropas\n", atacante->nome, atacante->cor, atacante->tropas);
+    printf("Defensor: %s (%s) com %d tropas\n", defensor->nome, defensor->cor, defensor->tropas);
+    
+    // Simular dados de batalha (1-6)
+    int dadoAtacante = (rand() % 6) + 1;
+    int dadoDefensor = (rand() % 6) + 1;
+    
+    printf("\nDados rolados:\n");
+    printf("Atacante: %d\n", dadoAtacante);
+    printf("Defensor: %d\n", dadoDefensor);
+    
+    if(dadoAtacante > dadoDefensor) {
+        // Atacante vence
+        printf("\n>>> VITORIA DO ATACANTE! <<<\n");
+        
+        // Transferir metade das tropas do defensor para o atacante
+        int tropasConquistadas = defensor->tropas / 2;
+        atacante->tropas += tropasConquistadas;
+        defensor->tropas -= tropasConquistadas;
+        
+        // Mudar a cor do território defensor
+        strcpy(defensor->cor, atacante->cor);
+        
+        printf("O territorio %s agora pertence ao exercito %s!\n", defensor->nome, atacante->cor);
+        printf("Tropas transferidas: %d\n", tropasConquistadas);
+        
+    } else if(dadoAtacante < dadoDefensor) {
+        // Defensor vence
+        printf("\n>>> VITORIA DO DEFENSOR! <<<\n");
+        
+        // Atacante perde uma tropa
+        if(atacante->tropas > 1) {
+            atacante->tropas--;
+            printf("O atacante perdeu 1 tropa!\n");
+        } else {
+            printf("O atacante nao tem tropas para perder!\n");
+        }
+        
+    } else {
+        // Empate
+        printf("\n>>> EMPATE! Nada acontece. <<<\n");
+    }
+    
+    printf("\nSituacao apos a batalha:\n");
+    printf("Atacante: %d tropas\n", atacante->tropas);
+    printf("Defensor: %d tropas (%s)\n", defensor->tropas, defensor->cor);
+}
+
+// Função para simular o ataque com interface do usuário
+void simularAtaque(struct Territorio* mapa, int totalTerritorios) {
+    if(mapa == NULL || totalTerritorios < 2) {
+        printf("\nEh necessario pelo menos 2 territorios para simular um ataque!\n");
+        return;
+    }
+    
+    int idxAtacante, idxDefensor;
+    
+    printf("\n=== SIMULAR ATAQUE ===\n");
+    exibirTerritorios(mapa, totalTerritorios);
+    
+    // Escolher território atacante
+    printf("\nEscolha o territorio ATACANTE (1 a %d): ", totalTerritorios);
+    scanf("%d", &idxAtacante);
+    idxAtacante--; // Ajustar para índice do array
+    
+    if(idxAtacante < 0 || idxAtacante >= totalTerritorios) {
+        printf("Territorio invalido!\n");
+        return;
+    }
+    
+    // Escolher território defensor
+    printf("Escolha o territorio DEFENSOR (1 a %d): ", totalTerritorios);
+    scanf("%d", &idxDefensor);
+    idxDefensor--; // Ajustar para índice do array
+    
+    if(idxDefensor < 0 || idxDefensor >= totalTerritorios) {
+        printf("Territorio invalido!\n");
+        return;
+    }
+    
+    // Validar se não é o mesmo território
+    if(idxAtacante == idxDefensor) {
+        printf("Um territorio nao pode atacar a si mesmo!\n");
+        return;
+    }
+    
+    // Validar se não são do mesmo exército
+    if(strcmp(mapa[idxAtacante].cor, mapa[idxDefensor].cor) == 0) {
+        printf("Territorios do mesmo exercito nao podem se atacar!\n");
+        return;
+    }
+    
+    // Executar o ataque
+    atacar(&mapa[idxAtacante], &mapa[idxDefensor]);
+}
+
+// Função para liberar memória alocada
+void liberarMemoria(struct Territorio* mapa) {
+    if(mapa != NULL) {
+        free(mapa);
+        printf("\nMemoria liberada com sucesso!\n");
+    }
 }
